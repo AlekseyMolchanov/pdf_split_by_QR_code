@@ -17,23 +17,23 @@ from PyPDF2.utils import PdfReadError
 class File(object):
 
     def __init__(self, source, num, folder):
-        
+
         self.num = num
         self.folder = folder
         self.uuid = str(uuid.uuid4())
-        
+
         self.source = source
         self.file_name = "{}_{}.pdf" .format(self.source.filename, self.uuid)
 
     def save(self, folder=None):
-        
+
         tmpl = "[%s] from file '%s' copy page (%s) to %s"
 
         page = self.source.reader.getPage(self.num)
         path = os.path.join(folder or self.folder, self.file_name)
-        
+
         try:
-            with open(path, 'wb') as output: 
+            with open(path, 'wb') as output:
                 wrt = PdfFileWriter()
                 wrt.addPage(page)
                 wrt.write(output)
@@ -42,25 +42,18 @@ class File(object):
             return tmpl % (ex, self.source.source, self.num, path)
 
 
-class Tool(object):
-    def __init__(self, source=None):
-        self.source = source
+class Tool:
+    def __init__(self, reader=None):
+
+        self.reader = reader
         self.__pages = {}
         self.__qrcodes = {}
 
-        if not self.source:
+        if not self.reader:
             raise ValueError('Source is not set')
-        try:
-            self.reader = PdfFileReader(open(self.source, "rb"))
-        except Exception as er:
-            raise ValueError('Is not PDF [%s]' % self.source)
         else:
-
-            head, tail = os.path.split(self.source)
-            self.filename = '.'.join(tail.split('.')[:-1])
+            self.filename = self.reader.filename
             self.__split_pages()
-            
-        return super(Tool, self).__init__()
 
     @property
     def pages_count(self):
@@ -90,29 +83,26 @@ class Tool(object):
 
                 __files.append(File(
                     self,
-                    num, 
+                    num,
                     folder
                 ))
         return __files
 
     @staticmethod
     def code(file_path=None, barcode_type='QRCODE'):
-   
-        
-        
+
         image = read_image(file_path)
-        
+
         if len(image.shape) == 3:
             image = zbar.misc.rgb2gray(image)
-        
+
         barcodes = []
 
         scanner = zbar.Scanner()
         results = scanner.scan(image)
         for barcode in results:
-            barcodes.append(barcode.data.decode(u'utf-8'))    
-        
-            
+            barcodes.append(barcode.data.decode(u'utf-8'))
+
         return barcodes
 
     def __split_pages(self):
@@ -121,18 +111,18 @@ class Tool(object):
             page = self.reader.getPage(num)
 
             with NamedTemporaryFile(delete=False) as tmp:
-                
+
                 wrt = PdfFileWriter()
                 wrt.addPage(page)
                 wrt.write(tmp)
                 tmp.close()
 
                 with NamedTemporaryFile(delete=False) as out:
-                    
+
                     with WAND_Image(filename=tmp.name, resolution=150) as img:
                         img.format = 'jpg'
                         img.save(file=out)
-                    
+
                     out.close()
 
                     self.__qrcodes[num] = Tool.code(out.name)

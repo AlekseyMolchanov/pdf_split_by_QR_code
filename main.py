@@ -3,7 +3,7 @@
 
 import sys
 from tool import Tool
-
+from readers import PDFDocument
 USAGE = '''
 Use this script as:
     ./main.py <source file path>
@@ -14,7 +14,8 @@ Use this script as:
 
 def process(source):
     try:
-        tool = Tool(source)
+        reader = PDFDocument(source)
+        tool = Tool(reader)
         for each in tool.files:
             print(each.save())
     except Exception as e:
@@ -30,4 +31,3 @@ def main(_, source = None, *args):
 
 if __name__ == "__main__":
     exit(main(*list(sys.argv or [])))
-    
