@@ -16,8 +16,8 @@ ADD requirements.txt /opt/requirements.txt
 WORKDIR /opt
 RUN pip install -r requirements.txt
 
-ADD . /opt/pdf_split_by_QR_code
-WORKDIR /opt/pdf_split_by_QR_code
+ADD . /opt/split_by_QR_code
+WORKDIR /opt/split_by_QR_code
 
 
-ENTRYPOINT [ "pytest" ]
+ENTRYPOINT [ "pytest" , "-vs", "-x"]

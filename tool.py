@@ -2,62 +2,46 @@
 # encoding: utf-8
 
 import io, os, uuid
-from tempfile import NamedTemporaryFile
-
 import zbar
 import zbar.misc
 from skimage.io import imread as read_image
 
-from wand.image import Image as WAND_Image
-
-from PyPDF2 import PdfFileReader, PdfFileWriter
-from PyPDF2.utils import PdfReadError
-
 
 class File(object):
-
-    def __init__(self, source, num, folder):
-
+    def __init__(self, tool, num, folder):
+        self.tool = tool
         self.num = num
         self.folder = folder
         self.uuid = str(uuid.uuid4())
 
-        self.source = source
-        self.file_name = "{}_{}.pdf" .format(self.source.filename, self.uuid)
+    @property
+    def filename(self):
+        return self.tool.io.get_filename(self.uuid)
 
     def save(self, folder=None):
-
+        path = os.path.join(folder or self.folder, self.filename)
+        result = self.tool.io.savePage(self.num, path)
         tmpl = "[%s] from file '%s' copy page (%s) to %s"
-
-        page = self.source.reader.getPage(self.num)
-        path = os.path.join(folder or self.folder, self.file_name)
-
-        try:
-            with open(path, 'wb') as output:
-                wrt = PdfFileWriter()
-                wrt.addPage(page)
-                wrt.write(output)
-                return tmpl % ('ok', self.source.source, self.num, path)
-        except Exception as ex:
-            return tmpl % (ex, self.source.source, self.num, path)
+        return tmpl % result
 
 
 class Tool:
-    def __init__(self, reader=None):
+    def __init__(self, io=None, logger=None):
 
-        self.reader = reader
+        self.io = io
+        self.__logger = logger
+
         self.__pages = {}
         self.__qrcodes = {}
 
-        if not self.reader:
+        if not self.io:
             raise ValueError('Source is not set')
         else:
-            self.filename = self.reader.filename
             self.__split_pages()
 
     @property
     def pages_count(self):
-        return self.reader.getNumPages()
+        return self.io.getNumPages()
 
     @property
     def pages(self):
@@ -75,7 +59,7 @@ class Tool:
 
         for num in self.__pages.keys():
             barcodes = self.__qrcodes.get(num)
-            if barcodes:
+            if barcodes and any(barcodes):
                 folder = barcodes[0]
             else:
                 if not folder:
@@ -97,36 +81,19 @@ class Tool:
             image = zbar.misc.rgb2gray(image)
 
         barcodes = []
-
         scanner = zbar.Scanner()
         results = scanner.scan(image)
         for barcode in results:
             barcodes.append(barcode.data.decode(u'utf-8'))
-
         return barcodes
 
     def __split_pages(self):
-        for count_index, num in enumerate(range(self.pages_count), 1):
+        for num in range(self.pages_count):
             self.__pages[num] = True
-            page = self.reader.getPage(num)
 
-            with NamedTemporaryFile(delete=False) as tmp:
+            tmp = self.io.getTemporaryPage(num)
+            code = Tool.code(tmp.name)
+            self.__qrcodes[num] = code
 
-                wrt = PdfFileWriter()
-                wrt.addPage(page)
-                wrt.write(tmp)
-                tmp.close()
-
-                with NamedTemporaryFile(delete=False) as out:
-
-                    with WAND_Image(filename=tmp.name, resolution=150) as img:
-                        img.format = 'jpg'
-                        img.save(file=out)
-
-                    out.close()
-
-                    self.__qrcodes[num] = Tool.code(out.name)
-
-                    os.unlink(out.name)
-
+            if os.path.isfile(tmp.name):
                 os.unlink(tmp.name)

@@ -89,6 +89,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+samples/output
+.vscode/
 
 # Spyder project settings
 .spyderproject
@@ -105,3 +107,4 @@ venv.bak/
 
 Dropbox/
 sources/
+*.tif

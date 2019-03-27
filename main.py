@@ -1,21 +1,24 @@
-#!/usr/bin/env python
 # encoding: utf-8
 
-import sys
+import sys, os
+import argparse
 from tool import Tool
-from readers import PDFDocument
-USAGE = '''
-Use this script as:
-    ./main.py <source file path>
+from proc import PDFDocument, ImageFolder
 
-    Example:
-    ./main.py sample.pdf
-'''
+import logging
+logging.basicConfig()
+logger = logging.getLogger('qrcode_tool')
+logger.setLevel(logging.DEBUG)
 
-def process(source):
+Modes = dict(
+    pdf=PDFDocument,
+    folder=ImageFolder
+)
+
+def process(cls, source):
     try:
-        reader = PDFDocument(source)
-        tool = Tool(reader)
+        reader = cls(source)
+        tool = Tool(reader, logger=logger)
         for each in tool.files:
             print(each.save())
     except Exception as e:
@@ -23,11 +26,12 @@ def process(source):
         return 2
     return 0
 
-def main(_, source = None, *args):
-    if args or not source:
-        print (USAGE)
-        return 1
-    return process(source)
+def main():
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-m', help='mode', default='pdf')
+    parser.add_argument('source', help='source path')
+    args = parser.parse_args()
+    return process(Modes.get(args.m), os.path.abspath(args.source))
 
 if __name__ == "__main__":
-    exit(main(*list(sys.argv or [])))
+    exit(main())

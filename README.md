@@ -1,5 +1,5 @@
-# Split PDF document into pages by QR code
-Small tool to split pdf document into pages by QR code
+# Dispatch images to folders by the path from QR code
+Small tool to split pdf document into pages by QR code or process folder with images
 
 [![CircleCI](https://circleci.com/gh/AlekseyMolchanov/pdf_split_by_QR_code/tree/master.svg?style=svg)](https://circleci.com/gh/AlekseyMolchanov/pdf_split_by_QR_code/tree/master)
 [![codecov](https://codecov.io/gh/AlekseyMolchanov/pdf_split_by_QR_code/branch/master/graph/badge.svg)](https://codecov.io/gh/AlekseyMolchanov/pdf_split_by_QR_code)
@@ -9,11 +9,12 @@ Small tool to split pdf document into pages by QR code
 # Usage
 Use this script as:
 
-    ./main.py <source file path>
+    ./main.py -m <module> <source path>
 
 Example
 
-    ./main.py sample.pdf
+    ./main.py -m pdf ./samples/pdf/multipage.pdf
+    .main.py -m folder ./samples/tiff
 
 # Tests
 
@@ -23,17 +24,17 @@ Example
 
 build:
 
-    docker build --rm -f "Dockerfile" -t pdf_qr_code_split:latest .
+    docker build --rm -f "Dockerfile" -t qr_code_split:latest .
 
 run tests:
 
-    docker run -it --rm pdf_qr_code_split
+    docker run -it --rm qr_code_split
 
 run sample:
 
     > the tool will try find folder inside the container, not in your file system
 
-    docker run -it  --rm -v $(pwd):/ext --entrypoint "python" pdf_qr_code_split main.py ./sample.pdf
+    ddocker run -it  --rm  -v $$(pwd)/samples/output/pdf:/data --entrypoint "python" qr_code_split main.py -m pdf ./samples/pdf/multipage.pdf
 
 run as script:
 
@@ -42,7 +43,7 @@ run as script:
     docker run -it  --rm \
 			-v $$(pwd)/Dropbox:/Dropbox \
 			-v $$(pwd)/sources:/sources \
-			--entrypoint "python" pdf_qr_code_split main.py /sources/sample.pdf
+			--entrypoint "python" qr_code_split main.py -m pdf ./samples/pdf/multipage.pdf
 
 
 
