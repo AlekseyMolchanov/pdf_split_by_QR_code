@@ -20,12 +20,13 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            rm /etc/apt/sources.list
+            # rm /etc/apt/sources.list
             echo "deb http://archive.debian.org/debian/ jessie-backports main" | tee -a /etc/apt/sources.list
             echo "deb-src http://archive.debian.org/debian/ jessie-backports main" | tee -a /etc/apt/sources.list
             echo "Acquire::Check-Valid-Until false;" | tee -a /etc/apt/apt.conf.d/10-nocheckvalid
             echo 'Package: *\nPin: origin "archive.debian.org"\nPin-Priority: 500' | tee -a /etc/apt/preferences.d/10-archive-pin
-            apt-get update && apt-get install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev libpng-dev build-essential
+            apt-get update
+            apt-get install libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev libpng-dev build-essential -y
             apt-get install imagemagick ghostscript -y
             apt-get install libmagickwand-dev -y
             apt-get install zlib1g-dev -y
