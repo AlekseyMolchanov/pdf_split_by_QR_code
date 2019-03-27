@@ -20,7 +20,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo rm /etc/apt/sources.list
+            rm /etc/apt/sources.list
             echo "deb http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
             echo "deb-src http://archive.debian.org/debian/ jessie-backports main" | sudo tee -a /etc/apt/sources.list
             echo "Acquire::Check-Valid-Until false;" | sudo tee -a /etc/apt/apt.conf.d/10-nocheckvalid
