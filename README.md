@@ -1,5 +1,5 @@
 # Dispatch images to folders by the path from QR code
-Small tool to split pdf document into pages by QR code or process folder with images
+Small tool to split multipage pdf or process folder with images to move pages into separate folders by QR code
 
 [![CircleCI](https://circleci.com/gh/AlekseyMolchanov/split_by_QR_code/tree/master.svg?style=svg)](https://circleci.com/gh/AlekseyMolchanov/split_by_QR_code/tree/master)
 [![codecov](https://codecov.io/gh/AlekseyMolchanov/split_by_QR_code/branch/master/graph/badge.svg)](https://codecov.io/gh/AlekseyMolchanov/split_by_QR_code)
