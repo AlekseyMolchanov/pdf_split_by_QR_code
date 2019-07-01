@@ -2,7 +2,7 @@ import os
 
 from .interface import DocumentInterface
 from tempfile import NamedTemporaryFile
-from wand.image import Image as WAND_Image
+from PIL import Image
 
 
 class ImageFolder(DocumentInterface):
@@ -28,11 +28,10 @@ class ImageFolder(DocumentInterface):
     def getTemporaryPage(self, page_number):
         tmp = self.getPage(page_number)
         with NamedTemporaryFile(delete=False) as out:
-            with WAND_Image(filename=tmp.name, resolution=150) as img:
-                img.format = 'jpg'
-                img.save(file=out)
-                out.close()
-                return out
+            img = Image.open(tmp.name)
+            img.save(out, format='JPEG', quality=100, dpi=(150, 150))
+            out.close()
+            return out
 
     def get_filename(self, uuid):
         return "{}_{}.tif" .format(os.path.basename(self.source), uuid)
