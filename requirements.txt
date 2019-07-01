@@ -1,5 +1,6 @@
 pytest
+pillow
 wand
 PyPDF2
 zbar-py
-scikit-image
+numpy

@@ -4,7 +4,8 @@
 import io, os, uuid
 import zbar
 import zbar.misc
-from skimage.io import imread as read_image
+from PIL import Image
+import numpy
 
 
 class File(object):
@@ -73,18 +74,20 @@ class Tool:
         return __files
 
     @staticmethod
-    def code(file_path=None, barcode_type='QRCODE'):
+    def code(file_path, barcode_type='QRCODE'):
 
-        image = read_image(file_path)
+        pil = Image.open(file_path).convert('L')
+        np_im = numpy.array(pil)
 
-        if len(image.shape) == 3:
-            image = zbar.misc.rgb2gray(image)
+        if len(np_im.shape) == 3:
+            np_im = zbar.misc.rgb2gray(np_im)
 
         barcodes = []
         scanner = zbar.Scanner()
-        results = scanner.scan(image)
+
+        results = scanner.scan(np_im)
         for barcode in results:
-            barcodes.append(barcode.data.decode(u'utf-8'))
+            barcodes.append(barcode.data.decode('utf-8'))
         return barcodes
 
     def __split_pages(self):
